@@ -1,7 +1,9 @@
 {
     "symbol-whitelist": [
         "app",
+        "app_path",
         "base_path",
+        "class_basename",
         "config",
         "config_path",
         "storage_path",

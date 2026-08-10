@@ -2,7 +2,43 @@
 
 declare(strict_types=1);
 
+use ZeroToProd\DbModel\HasColumnAttribute;
+
 return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Source Artifacts
+    |--------------------------------------------------------------------------
+    |
+    | Where the PHP table enums live. `namespace` and `path` must describe the
+    | same place: a directory holding one subdirectory per schema, named after
+    | it. `--schema=App` therefore resolves to:
+    |
+    |     App\Sources\Db\App\App   the enum carrying the #[Schema] attribute
+    |     app/Sources/Db/App/*.php the enums carrying the #[Table] attribute
+    |
+    */
+
+    'namespace' => 'App\\Sources\\Db',
+
+    'path' => app_path('Sources/Db'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Column Trait
+    |--------------------------------------------------------------------------
+    |
+    | The trait every generated table enum uses. The default reads the
+    | #[Column] attribute and derives the validation rules from it.
+    |
+    | Anything else a column implies — an OpenApi schema, an Eloquent cast — is
+    | yours to define. Point this at a trait of your own that uses
+    | HasColumnAttribute, and the generator will use it instead.
+    |
+    */
+
+    'trait' => HasColumnAttribute::class,
 
     /*
     |--------------------------------------------------------------------------

@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Mcp\Facades\Mcp;
 use Override;
+use ZeroToProd\DbModel\Internal\Commands\CheckCommand;
+use ZeroToProd\DbModel\Internal\Commands\GenerateCommand;
+use ZeroToProd\DbModel\Internal\Commands\InstallCommand;
 use ZeroToProd\DbModel\Internal\Mcp\Server;
 
 /** @internal */
@@ -26,6 +29,12 @@ class DbModelServiceProvider extends ServiceProvider
         $this->registerMcpServer();
 
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                CheckCommand::class,
+                GenerateCommand::class,
+                InstallCommand::class,
+            ]);
+
             $this->publishes([
                 __DIR__.'/../config/db-model.php' => config_path('db-model.php'),
             ], 'db-model-config');
