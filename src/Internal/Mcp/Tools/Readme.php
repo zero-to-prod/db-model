@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ZeroToProd\LaravelPackage\Internal\Mcp\Tools;
+namespace ZeroToProd\DbModel\Internal\Mcp\Tools;
 
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;

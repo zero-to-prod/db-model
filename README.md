@@ -1,55 +1,6 @@
-<!-- template:start -->
-# Laravel Package Template
+# Db Model
 
-A template for a Laravel package. It ships as a working package —
-`zero-to-prod/laravel-package` — whose `composer check` passes, so what you copy
-is already proven rather than a pile of placeholders.
-
-## Getting started
-
-1. Click **Use this template** on GitHub, or clone this repository.
-2. From the repository root:
-
-   ```bash
-   php init
-   ```
-
-3. Answer the prompts, check the summary, confirm.
-4. Install and verify:
-
-   ```bash
-   composer update
-   composer fix     # your namespace sorts differently, so imports move
-   composer check
-   ```
-
-`init` rewrites the template's name, namespace, config key, MCP handle, author
-and copyright throughout the tree, renames `src/LaravelPackageServiceProvider.php`
-and `config/laravel-package.php` to match, strips this section, and deletes
-itself. Nothing is written until you confirm the summary.
-
-## What you get
-
-| | |
-|---|---|
-| `composer check` | pint, rector, phpstan level 9, pest at 100% coverage, backward-compatibility check — all of it, one command |
-| `composer fix` | rector then pint |
-| `composer require-check` | ComposerRequireChecker against a production-only dependency tree |
-| `.github/workflows` | the same checks on push, a PHP × Laravel test matrix, and a tag-driven GitHub release that verifies the tag is on `main` |
-| `.claude/` | a Stop hook that runs `composer check` after Claude edits `src/` or `tests/`, and hands failures back to it |
-| MCP server | serves this README and the package's public API to coding agents |
-| `.gitattributes` | keeps development files out of the distributed archive |
-
-The MCP server's `api` tool reflects over `src/` and prints a signature stub for
-every class that is not under `src/Internal/` and not marked `@internal`. That
-is the package's supported surface, and the fixtures under
-`tests/Fixtures/PublicApi` are what keep the renderer at 100% coverage — keep
-them.
-
-<!-- template:end -->
-# Laravel Package
-
-A Laravel package.
+Generates PHP Artifacts to Represent Database Schemas
 
 ## Requirements
 
@@ -59,7 +10,7 @@ A Laravel package.
 ## Installation
 
 ```bash
-composer require zero-to-prod/laravel-package
+composer require zero-to-prod/db-model
 ```
 
 ### Configuration
@@ -67,7 +18,7 @@ composer require zero-to-prod/laravel-package
 Publish the configuration file to override the defaults:
 
 ```bash
-php artisan vendor:publish --tag=laravel-package-config
+php artisan vendor:publish --tag=db-model-config
 ```
 
 ## Agent development
@@ -79,13 +30,13 @@ it.
 
 ```bash
 composer require --dev laravel/mcp
-php artisan mcp:start laravel-package
+php artisan mcp:start db-model
 ```
 
 Register it with your agent:
 
 ```bash
-claude mcp add laravel-package -- php artisan mcp:start laravel-package
+claude mcp add db-model -- php artisan mcp:start db-model
 ```
 
 Two tools are exposed:
@@ -95,12 +46,12 @@ Two tools are exposed:
   Anything unlisted is internal and may change in any release.
 
 Point the handle somewhere else, or turn the server off, in
-`config/laravel-package.php`:
+`config/db-model.php`:
 
 ```php
 'mcp' => [
     'enabled' => true,
-    'handle' => 'laravel-package',
+    'handle' => 'db-model',
 ],
 ```
 

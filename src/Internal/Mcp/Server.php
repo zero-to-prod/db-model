@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace ZeroToProd\LaravelPackage\Internal\Mcp;
+namespace ZeroToProd\DbModel\Internal\Mcp;
 
 use Laravel\Mcp\Server\Tool;
-use ZeroToProd\LaravelPackage\Internal\Mcp\Tools\Api;
-use ZeroToProd\LaravelPackage\Internal\Mcp\Tools\Readme;
+use ZeroToProd\DbModel\Internal\Mcp\Tools\Api;
+use ZeroToProd\DbModel\Internal\Mcp\Tools\Readme;
 
 /** @internal */
 class Server extends \Laravel\Mcp\Server
 {
-    protected string $name = 'Laravel Package';
+    protected string $name = 'Db Model';
 
     protected string $version = '1.0.0';
 

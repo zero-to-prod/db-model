@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ZeroToProd\LaravelPackage\Tests;
+namespace ZeroToProd\DbModel\Tests;
 
 use Illuminate\Contracts\Config\Repository;
 use Laravel\Mcp\Server\McpServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
-use ZeroToProd\LaravelPackage\LaravelPackageServiceProvider;
+use ZeroToProd\DbModel\DbModelServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
@@ -21,7 +21,7 @@ abstract class TestCase extends Orchestra
             // Real applications discover this from laravel/mcp's composer
             // manifest. Testbench does not, so it is listed explicitly.
             McpServiceProvider::class,
-            LaravelPackageServiceProvider::class,
+            DbModelServiceProvider::class,
         ];
     }
 

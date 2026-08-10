@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace ZeroToProd\LaravelPackage;
+namespace ZeroToProd\DbModel;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Mcp\Facades\Mcp;
 use Override;
-use ZeroToProd\LaravelPackage\Internal\Mcp\Server;
+use ZeroToProd\DbModel\Internal\Mcp\Server;
 
 /** @internal */
-class LaravelPackageServiceProvider extends ServiceProvider
+class DbModelServiceProvider extends ServiceProvider
 {
     /** @internal */
     #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/laravel-package.php', 'laravel-package');
+        $this->mergeConfigFrom(__DIR__.'/../config/db-model.php', 'db-model');
     }
 
     /** @internal */
@@ -27,8 +27,8 @@ class LaravelPackageServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/laravel-package.php' => config_path('laravel-package.php'),
-            ], 'laravel-package-config');
+                __DIR__.'/../config/db-model.php' => config_path('db-model.php'),
+            ], 'db-model-config');
         }
     }
 
@@ -40,10 +40,10 @@ class LaravelPackageServiceProvider extends ServiceProvider
         }
         // @codeCoverageIgnoreEnd
 
-        if (! Config::boolean('laravel-package.mcp.enabled', true)) {
+        if (! Config::boolean('db-model.mcp.enabled', true)) {
             return;
         }
 
-        Mcp::local(Config::string('laravel-package.mcp.handle', 'laravel-package'), Server::class);
+        Mcp::local(Config::string('db-model.mcp.handle', 'db-model'), Server::class);
     }
 }
