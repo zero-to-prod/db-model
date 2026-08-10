@@ -1,0 +1,17 @@
+{
+    "symbol-whitelist": [
+        "app",
+        "base_path",
+        "config",
+        "config_path",
+        "storage_path",
+
+        "Laravel\\Mcp\\Facades\\Mcp",
+        "Laravel\\Mcp\\Request",
+        "Laravel\\Mcp\\Response",
+        "Laravel\\Mcp\\Server",
+        "Laravel\\Mcp\\Server\\McpServiceProvider",
+        "Laravel\\Mcp\\Server\\Registrar",
+        "Laravel\\Mcp\\Server\\Tool"
+    ]
+}
