@@ -14,6 +14,9 @@
         "Laravel\\Mcp\\Server",
         "Laravel\\Mcp\\Server\\McpServiceProvider",
         "Laravel\\Mcp\\Server\\Registrar",
-        "Laravel\\Mcp\\Server\\Tool"
+        "Laravel\\Mcp\\Server\\Tool",
+        "Laravel\\Mcp\\Server\\Tools\\Annotations\\IsIdempotent",
+
+        "Illuminate\\Contracts\\JsonSchema\\JsonSchema"
     ]
 }

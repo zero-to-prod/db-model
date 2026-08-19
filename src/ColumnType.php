@@ -27,6 +27,8 @@ enum ColumnType: string
     case timestamp = 'timestamp';
     #[PhpType(PhpType::string)]
     case char = 'char';
+    #[PhpType(PhpType::string)]
+    case json = 'json';
 
     /** The native PHP type that carries this column type. */
     public function php(): string
