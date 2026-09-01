@@ -12,6 +12,10 @@ class Table
 {
     public const string name = 'name';
 
+    public const string comment = 'comment';
+
+    public const string engine = 'engine';
+
     public const string collate = 'collate';
 
     public const string indexes = 'indexes';
