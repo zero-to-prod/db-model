@@ -23,17 +23,21 @@ class InstallCommand extends Command
         $namespace = trim($this->text('The namespace the generated artifacts live under', Config::string('db-model.namespace')), '\\');
         $path = rtrim($this->text('The directory they live in', Installer::relative(Config::string('db-model.path'))), '/');
         $trait = trim($this->text('The trait every generated table enum uses', Config::string('db-model.trait', HasColumnAttribute::class)), '\\');
+        $implements = Installer::interfaces(explode(',', $this->text(
+            'The interfaces every generated table enum implements, comma separated',
+            implode(', ', Installer::interfaces(Config::get('db-model.implements'))),
+        )));
         $mcp = $this->confirm('Register the MCP server that documents the package to coding agents?', Config::boolean('db-model.mcp.enabled', true));
         $handle = $mcp ? $this->text('The handle the MCP server is registered under', Config::string('db-model.mcp.handle', 'db-model')) : Config::string('db-model.mcp.handle', 'db-model');
         $file = Installer::path();
 
         $this->components->twoColumnDetail($file, Installer::write(
             $file,
-            Installer::configuration($namespace, $path, $trait, $mcp, $handle),
+            Installer::configuration($namespace, $path, $trait, $implements, $mcp, $handle),
             fn (): bool => $this->confirm('['.$file.'] differs from these answers. Overwrite it?', true),
         ));
 
-        Installer::apply($namespace, $path, $trait);
+        Installer::apply($namespace, $path, $trait, $implements);
 
         $connection = $this->choose('The connection that reaches the databases', array_map(strval(...), array_keys(Config::array('database.connections'))), Config::string('database.default'));
         $databases = Installer::databases($connection);

@@ -42,6 +42,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Enum Interfaces
+    |--------------------------------------------------------------------------
+    |
+    | The interface every generated table enum implements. Null declares none,
+    | which is the default. A single class-string, or a list of them:
+    |
+    |     'implements' => App\Sources\Db\Authority::class,
+    |     'implements' => [App\Sources\Db\Authority::class, Stringable::class],
+    |
+    | The generator writes the `implements` clause and the imports it needs.
+    | Satisfying the interface is yours to do, on the trait above.
+    |
+    */
+
+    'implements' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | MCP Server
     |--------------------------------------------------------------------------
     |

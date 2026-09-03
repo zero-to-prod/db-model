@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use RuntimeException;
+use ZeroToProd\DbModel\Internal\Installer;
 
 /** @internal */
 final readonly class SourceSchema
@@ -15,12 +16,14 @@ final readonly class SourceSchema
     /**
      * @param  class-string  $schema
      * @param  trait-string  $trait
+     * @param  list<class-string>  $implements  The interfaces every generated table enum declares
      */
     private function __construct(
         public string $schema,
         public string $namespace,
         public string $directory,
         public string $trait,
+        public array $implements,
     ) {}
 
     public static function make(string $name): self
@@ -38,7 +41,23 @@ final readonly class SourceSchema
             throw new RuntimeException("The configured [db-model.trait] is not a trait: [{$trait}].");
         }
 
-        return new self($schema, $namespace, Config::string('db-model.path').'/'.$name, $trait);
+        return new self($schema, $namespace, Config::string('db-model.path').'/'.$name, $trait, self::implemented());
+    }
+
+    /** @return list<class-string> */
+    private static function implemented(): array
+    {
+        $interfaces = [];
+
+        foreach (Installer::interfaces(Config::get('db-model.implements')) as $interface) {
+            if (! interface_exists($interface)) {
+                throw new RuntimeException("The configured [db-model.implements] is not an interface: [{$interface}].");
+            }
+
+            $interfaces[] = $interface;
+        }
+
+        return $interfaces;
     }
 
     public function className(string $table): string

@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Testing\PendingCommand;
 use ZeroToProd\DbModel\HasColumnAttribute;
+use ZeroToProd\DbModel\Tests\Fixtures\Describable;
 use ZeroToProd\DbModel\Tests\Fixtures\HasFixtureColumn;
+use ZeroToProd\DbModel\Tests\Fixtures\Sortable;
 
 beforeEach(function (): void {
     $this->defineFixtureTables();
@@ -45,6 +47,7 @@ test('db-model:install writes the configuration, the schema enum and the table e
         ->expectsQuestion('The namespace the generated artifacts live under', 'ZeroToProd\\DbModel\\Tests\\Fixtures\\Db')
         ->expectsQuestion('The directory they live in', dirname(__DIR__).'/Fixtures/Db')
         ->expectsQuestion('The trait every generated table enum uses', HasFixtureColumn::class)
+        ->expectsQuestion('The interfaces every generated table enum implements, comma separated', '')
         ->expectsConfirmation('Register the MCP server that documents the package to coding agents?', 'yes')
         ->expectsQuestion('The handle the MCP server is registered under', 'package-docs')
         ->expectsQuestion('The connection that reaches the databases', 'mysql')
@@ -68,6 +71,7 @@ test('db-model:install writes the answers into the published configuration', fun
         ->expectsQuestion('The namespace the generated artifacts live under', 'ZeroToProd\\DbModel\\Tests\\Fixtures\\Db')
         ->expectsQuestion('The directory they live in', dirname(__DIR__).'/Fixtures/Db')
         ->expectsQuestion('The trait every generated table enum uses', HasFixtureColumn::class)
+        ->expectsQuestion('The interfaces every generated table enum implements, comma separated', Describable::class.', \\'.Sortable::class)
         ->expectsConfirmation('Register the MCP server that documents the package to coding agents?', 'yes')
         ->expectsQuestion('The handle the MCP server is registered under', 'package-docs')
         ->expectsQuestion('The connection that reaches the databases', 'mysql')
@@ -81,6 +85,9 @@ test('db-model:install writes the answers into the published configuration', fun
         ->toContain("'path' => '".dirname(__DIR__)."/Fixtures/Db',")
         ->toContain('use '.HasFixtureColumn::class.';')
         ->toContain("'trait' => HasFixtureColumn::class,")
+        ->toContain('use '.Describable::class.';')
+        ->toContain('use '.Sortable::class.';')
+        ->toContain("'implements' => [Describable::class, Sortable::class],")
         ->toContain("'enabled' => true,")
         ->toContain("'handle' => 'package-docs',")
         // Nothing was generated, so only the schema enum was written.
@@ -92,6 +99,7 @@ test('db-model:install expresses an app path with app_path() and turns the MCP s
         ->expectsQuestion('The namespace the generated artifacts live under', 'App\\Sources\\Db')
         ->expectsQuestion('The directory they live in', 'app/Sources/Db')
         ->expectsQuestion('The trait every generated table enum uses', HasColumnAttribute::class)
+        ->expectsQuestion('The interfaces every generated table enum implements, comma separated', '')
         ->expectsConfirmation('Register the MCP server that documents the package to coding agents?', 'no')
         ->expectsQuestion('The connection that reaches the databases', 'mysql')
         ->expectsQuestion('Which databases should be mirrored in PHP?', [installDatabase()])
@@ -104,6 +112,7 @@ test('db-model:install expresses an app path with app_path() and turns the MCP s
         ->toContain("'path' => app_path('Sources/Db'),")
         ->toContain('use ZeroToProd\DbModel\HasColumnAttribute;')
         ->toContain("'trait' => HasColumnAttribute::class,")
+        ->toContain("'implements' => null,")
         ->toContain("'enabled' => false,")
         ->and(File::exists(base_path('app/Sources/Db/'.installEnum().'/'.installEnum().'.php')))->toBeTrue();
 });
@@ -113,6 +122,7 @@ test('db-model:install reports what it left alone and asks before overwriting th
         ->expectsQuestion('The namespace the generated artifacts live under', 'App\\Sources\\Db')
         ->expectsQuestion('The directory they live in', 'storage/db-model')
         ->expectsQuestion('The trait every generated table enum uses', HasColumnAttribute::class)
+        ->expectsQuestion('The interfaces every generated table enum implements, comma separated', '')
         ->expectsConfirmation('Register the MCP server that documents the package to coding agents?', 'yes')
         ->expectsQuestion('The handle the MCP server is registered under', 'db-model');
 

@@ -32,6 +32,8 @@ class Install extends Tool
                 ->description('The directory they live in, relative to the project root. Must describe the same place as the namespace. Defaults to the current setting.'),
             'trait' => $schema->string()
                 ->description('The trait every generated table enum uses. Defaults to the current setting.'),
+            'implements' => $schema->array()->items($schema->string())
+                ->description('The interfaces every generated table enum implements. Defaults to the current setting; an empty list declares none.'),
             'mcp_enabled' => $schema->boolean()
                 ->description('Register the MCP server that documents the package to coding agents. Defaults to the current setting.'),
             'mcp_handle' => $schema->string()
@@ -52,6 +54,7 @@ class Install extends Tool
         $namespace = trim($this->text($request, 'namespace', Config::string('db-model.namespace')), '\\');
         $path = rtrim($this->text($request, 'path', Installer::relative(Config::string('db-model.path'))), '/');
         $trait = trim($this->text($request, 'trait', Config::string('db-model.trait', HasColumnAttribute::class)), '\\');
+        $implements = Installer::interfaces($request->has('implements') ? $request->array('implements') : Config::get('db-model.implements'));
         $mcp = $this->flag($request, 'mcp_enabled', Config::boolean('db-model.mcp.enabled', true));
         $handle = $this->text($request, 'mcp_handle', Config::string('db-model.mcp.handle', 'db-model'));
         $connection = $this->text($request, 'connection', Config::string('database.default'));
@@ -73,11 +76,11 @@ class Install extends Tool
         $file = Installer::path();
         $lines = [$file.' '.Installer::write(
             $file,
-            Installer::configuration($namespace, $path, $trait, $mcp, $handle),
+            Installer::configuration($namespace, $path, $trait, $implements, $mcp, $handle),
             static fn (): bool => $request->boolean('overwrite'),
         ).'.'];
 
-        Installer::apply($namespace, $path, $trait);
+        Installer::apply($namespace, $path, $trait, $implements);
 
         $generate = $this->flag($request, 'generate', true);
 

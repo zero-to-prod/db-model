@@ -38,7 +38,7 @@ final readonly class TableRenderer
             '        Table::collate => '.var_export($TableDefinition->collate, true).',',
             ...$this->indexes($TableDefinition),
             '    ])]',
-            'enum '.$this->SourceSchema->className($TableDefinition->name).': string',
+            'enum '.$this->SourceSchema->className($TableDefinition->name).': string'.$this->implemented(),
             '{',
             '    use '.class_basename($this->SourceSchema->trait).';',
         ];
@@ -50,6 +50,14 @@ final readonly class TableRenderer
         return implode("\n", [...$lines, '}', '']);
     }
 
+    /** The `implements` clause the enum declaration carries, empty when none is configured. */
+    private function implemented(): string
+    {
+        return $this->SourceSchema->implements === []
+            ? ''
+            : ' implements '.implode(', ', array_map(class_basename(...), $this->SourceSchema->implements));
+    }
+
     /** @return list<string> */
     private function imports(): array
     {
@@ -58,6 +66,7 @@ final readonly class TableRenderer
             ColumnType::class,
             $this->SourceSchema->trait,
             Table::class,
+            ...$this->SourceSchema->implements,
         ];
 
         sort($imports);

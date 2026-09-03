@@ -131,6 +131,30 @@ Users::created_at->cast();   // 'immutable_datetime'
 Users::created_at->rules();  // ['nullable', 'date'] — still from the package
 ```
 
+### Interfaces
+
+`implements` names an interface every generated table enum declares — a single
+class-string, or a list of them. It defaults to `null`, which declares none:
+
+```php
+// config/db-model.php
+'implements' => App\Sources\Db\Authority::class,
+'implements' => [App\Sources\Db\Authority::class, App\Sources\Db\Sortable::class],
+```
+
+```bash
+php artisan db-model:generate
+```
+
+```php
+enum Users: string implements Authority, Sortable
+{
+    use HasColumn;
+```
+
+The generator writes the clause and the imports it needs. Satisfying the
+interface is yours to do, on the `trait` above.
+
 ### Checking for drift
 
 Add the check to your pipeline. It names every difference and exits non-zero:
@@ -181,6 +205,7 @@ Three tools are exposed:
 {
   "namespace": "App\\Sources\\Db",
   "path": "app/Sources/Db",
+  "implements": ["App\\Sources\\Db\\Authority"],
   "databases": ["app", "reporting"],
   "generate": true
 }

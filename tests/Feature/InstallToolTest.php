@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use ZeroToProd\DbModel\Internal\Installer;
 use ZeroToProd\DbModel\Internal\Mcp\Server;
 use ZeroToProd\DbModel\Internal\Mcp\Tools\Install;
+use ZeroToProd\DbModel\Tests\Fixtures\Describable;
 use ZeroToProd\DbModel\Tests\Fixtures\HasFixtureColumn;
 
 beforeEach(function (): void {
@@ -41,6 +42,7 @@ function toolArguments(array $overrides = []): array
         'namespace' => 'ZeroToProd\\DbModel\\Tests\\Fixtures\\Db',
         'path' => dirname(__DIR__).'/Fixtures/Db',
         'trait' => HasFixtureColumn::class,
+        'implements' => [Describable::class],
         'databases' => [toolDatabase()],
         ...$overrides,
     ];
@@ -52,7 +54,7 @@ it('describes the tool so an agent knows when to call it', function (): void {
     expect($tool->name())->toBe('install')
         ->and($tool->description())->toContain('db-model:install')
         ->and($tool->toArray()['inputSchema']['properties'])->toHaveKeys([
-            'namespace', 'path', 'trait', 'mcp_enabled', 'mcp_handle', 'connection', 'databases', 'generate', 'overwrite',
+            'namespace', 'path', 'trait', 'implements', 'mcp_enabled', 'mcp_handle', 'connection', 'databases', 'generate', 'overwrite',
         ]);
 });
 
@@ -67,10 +69,12 @@ it('writes the configuration, the schema enum and the table enums', function ():
         ->toContain("'namespace' => 'ZeroToProd\\\\DbModel\\\\Tests\\\\Fixtures\\\\Db',")
         ->toContain("'path' => '".dirname(__DIR__)."/Fixtures/Db',")
         ->toContain("'trait' => HasFixtureColumn::class,")
+        ->toContain('use '.Describable::class.';')
+        ->toContain("'implements' => Describable::class,")
         ->toContain("'handle' => 'package-docs',")
         ->and(File::get(toolDirectory().'/'.Str::studly(toolDatabase()).'.php'))
         ->toContain("Schema::name => '".toolDatabase()."',")
-        ->and(File::get(toolDirectory().'/Widgets.php'))->toContain('enum Widgets: string');
+        ->and(File::get(toolDirectory().'/Widgets.php'))->toContain('enum Widgets: string implements Describable');
 });
 
 it('declares the database without generating when asked not to', function (): void {
@@ -97,6 +101,7 @@ it("falls back to the connection's own database and the current configuration", 
 
     expect(File::get(Installer::path()))
         ->toContain("'namespace' => 'ZeroToProd\\\\DbModel\\\\Tests\\\\Fixtures\\\\Db',")
+        ->toContain("'implements' => null,")
         ->toContain("'handle' => 'db-model',")
         ->and(File::exists(toolDirectory().'/'.Str::studly(toolDatabase()).'.php'))->toBeTrue();
 });

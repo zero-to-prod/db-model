@@ -21,30 +21,82 @@ final class Installer
         return config_path('db-model.php');
     }
 
-    public static function configuration(string $namespace, string $path, string $trait, bool $mcp, string $handle): string
+    /** @param  list<string>  $implements  The interfaces every generated table enum implements */
+    public static function configuration(string $namespace, string $path, string $trait, array $implements, bool $mcp, string $handle): string
     {
         return str_replace([
             "'App\\\\Sources\\\\Db'",
             "app_path('Sources/Db')",
             'use '.HasColumnAttribute::class.';',
             'HasColumnAttribute::class',
+            "'implements' => null,",
             "'enabled' => true,",
             "'handle' => 'db-model',",
         ], [
             var_export($namespace, true),
             self::expression($path),
-            'use '.$trait.';',
+            self::uses($trait, $implements),
             class_basename($trait).'::class',
+            "'implements' => ".self::implemented($implements).',',
             "'enabled' => ".var_export($mcp, true).',',
             "'handle' => ".var_export($handle, true).',',
         ], File::get(dirname(__DIR__, 2).'/config/db-model.php'));
     }
 
-    public static function apply(string $namespace, string $path, string $trait): void
+    /** @param  list<string>  $implements */
+    public static function apply(string $namespace, string $path, string $trait, array $implements): void
     {
         Config::set('db-model.namespace', $namespace);
         Config::set('db-model.path', self::absolute($path));
         Config::set('db-model.trait', $trait);
+        Config::set('db-model.implements', $implements);
+    }
+
+    /**
+     * A configured or answered `implements` as the list of class names it names.
+     *
+     * @return list<string>
+     */
+    public static function interfaces(mixed $value): array
+    {
+        $names = match (true) {
+            is_string($value) => [$value],
+            is_array($value) => array_values(array_filter($value, is_string(...))),
+            default => [],
+        };
+
+        return array_values(array_filter(
+            array_map(static fn (string $name): string => trim(trim($name), '\\'), $names),
+            static fn (string $name): bool => $name !== '',
+        ));
+    }
+
+    /**
+     * The import block the configuration file opens with.
+     *
+     * @param  list<string>  $implements
+     */
+    private static function uses(string $trait, array $implements): string
+    {
+        $uses = [$trait, ...$implements];
+
+        sort($uses);
+
+        return implode("\n", array_map(static fn (string $use): string => 'use '.$use.';', $uses));
+    }
+
+    /**
+     * The `implements` key as the configuration file should express it.
+     *
+     * @param  list<string>  $implements
+     */
+    private static function implemented(array $implements): string
+    {
+        return match (count($implements)) {
+            0 => 'null',
+            1 => class_basename($implements[0]).'::class',
+            default => '['.implode(', ', array_map(static fn (string $interface): string => class_basename($interface).'::class', $implements)).']',
+        };
     }
 
     /** @return array{0: string, 1: string} The enum's name and what happened to it */

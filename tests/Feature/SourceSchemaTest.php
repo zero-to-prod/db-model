@@ -13,7 +13,9 @@ use ZeroToProd\DbModel\TableDefinition;
 use ZeroToProd\DbModel\TableRenderer;
 use ZeroToProd\DbModel\Tests\Fixtures\Db\Testing\Testing;
 use ZeroToProd\DbModel\Tests\Fixtures\Db\Testing\Widgets;
+use ZeroToProd\DbModel\Tests\Fixtures\Describable;
 use ZeroToProd\DbModel\Tests\Fixtures\HasFixtureColumn;
+use ZeroToProd\DbModel\Tests\Fixtures\Sortable;
 
 test('the schema enum declares its name and collation', function (): void {
     $Schema = new ReflectionClass(Testing::class)->getAttributes(Schema::class)[0]->newInstance();
@@ -42,6 +44,7 @@ test('the source schema resolves its enum, namespace and directory', function ()
         ->and($SourceSchema->namespace)->toBe('ZeroToProd\DbModel\Tests\Fixtures\Db\Testing')
         ->and($SourceSchema->directory)->toBe(dirname(__DIR__).'/Fixtures/Db/Testing')
         ->and($SourceSchema->trait)->toBe(HasColumnAttribute::class)
+        ->and($SourceSchema->implements)->toBeEmpty()
         ->and($SourceSchema->className('personal_access_tokens'))->toBe('PersonalAccessTokens')
         ->and($SourceSchema->path('widgets'))->toBe(dirname(__DIR__).'/Fixtures/Db/Testing/Widgets.php');
 });
@@ -125,4 +128,57 @@ test('the renderer rejects a column type it cannot name', function (): void {
 
     expect(static fn (): string => $TableRenderer->render($TableDefinition))
         ->toThrow(RuntimeException::class, 'Unsupported column type [geometry]');
+});
+
+test('the renderer declares the configured interface', function (): void {
+    $this->withConfig(['db-model.implements' => Describable::class]);
+
+    $rendered = new TableRenderer(SourceSchema::make('Testing'))->render(
+        new TableDefinition('sprockets', 'utf8mb4_unicode_ci'),
+    );
+
+    expect($rendered)->toContain('use '.Describable::class.';')
+        ->toContain('enum Sprockets: string implements Describable');
+});
+
+test('the renderer declares every interface in a configured list, imported in order', function (): void {
+    $this->withConfig(['db-model.implements' => [Sortable::class, Describable::class]]);
+
+    $rendered = new TableRenderer(SourceSchema::make('Testing'))->render(
+        new TableDefinition('sprockets', 'utf8mb4_unicode_ci'),
+    );
+
+    expect($rendered)->toContain('enum Sprockets: string implements Sortable, Describable')
+        ->toContain(implode("\n", [
+            'use '.Table::class.';',
+            'use '.Describable::class.';',
+            'use '.Sortable::class.';',
+        ]));
+});
+
+// The key is optional, and an application that never sets it must keep the
+// files it already has.
+test('the renderer declares nothing when no interface is configured', function (mixed $configured): void {
+    $this->withConfig(['db-model.implements' => $configured]);
+
+    $SourceSchema = SourceSchema::make('Testing');
+    $TableRenderer = new TableRenderer($SourceSchema);
+
+    expect($SourceSchema->implements)->toBeEmpty();
+
+    foreach ($SourceSchema->tables() as $TableDefinition) {
+        expect($TableRenderer->render($TableDefinition))->toBe(File::get($SourceSchema->path($TableDefinition->name)));
+    }
+})->with([
+    'null' => null,
+    'an empty string' => '',
+    'an empty list' => [[]],
+    'a list of empty strings' => [['', ' ']],
+]);
+
+test('the source schema rejects a configured implements that is not an interface', function (): void {
+    $this->withConfig(['db-model.implements' => [HasColumnAttribute::class]]);
+
+    expect(static fn (): SourceSchema => SourceSchema::make('Testing'))
+        ->toThrow(RuntimeException::class, 'The configured [db-model.implements] is not an interface');
 });
