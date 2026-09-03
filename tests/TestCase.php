@@ -70,6 +70,7 @@ abstract class TestCase extends Orchestra
 
         Schema::create('gadgets', static function (Blueprint $table): void {
             $table->collation('utf8mb4_0900_ai_ci');
+            $table->comment('The gadgets a customer orders');
             $table->id()->comment('The unique identifier of the gadget');
             $table->string('code', 64)->unique()->comment('The code the gadget is ordered by');
             $table->string('family')->comment('The family the gadget belongs to');

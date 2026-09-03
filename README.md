@@ -76,6 +76,7 @@ use ZeroToProd\DbModel\Table;
     schema: App::class,
     attributes: [
         Table::name => 'users',
+        Table::comment => 'The users table',
         Table::collate => 'utf8mb4_unicode_ci',
     ])]
 enum Users: string

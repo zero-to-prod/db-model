@@ -12,12 +12,14 @@ final readonly class TableDefinition
     /**
      * @param  array<string, ColumnDefinition>  $columns
      * @param  array<string, list<string>>  $indexes
+     * @param  string|null  $comment  The table's own comment, null when it carries none
      */
     public function __construct(
         public string $name,
         public string $collate,
         public array $columns = [],
         public array $indexes = [],
+        public ?string $comment = null,
     ) {}
 
     /**
@@ -28,6 +30,7 @@ final readonly class TableDefinition
     {
         $name = $attributes[Table::name] ?? null;
         $collate = $attributes[Table::collate] ?? null;
+        $comment = $attributes[Table::comment] ?? null;
         $declared = $attributes[Table::indexes] ?? [];
         $indexes = [];
 
@@ -45,6 +48,7 @@ final readonly class TableDefinition
             is_string($collate) ? $collate : '',
             $columns,
             $indexes,
+            is_string($comment) && $comment !== '' ? $comment : null,
         );
     }
 }

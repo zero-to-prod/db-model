@@ -13,9 +13,9 @@ use ZeroToProd\DbModel\TableDefinition;
  * @param  array<string, ColumnDefinition>  $columns
  * @param  array<string, list<string>>  $indexes
  */
-function widgets(array $columns = [], string $collate = 'utf8mb4_unicode_ci', array $indexes = []): TableDefinition
+function widgets(array $columns = [], string $collate = 'utf8mb4_unicode_ci', array $indexes = [], ?string $comment = null): TableDefinition
 {
-    return new TableDefinition('widgets', $collate, $columns, $indexes);
+    return new TableDefinition('widgets', $collate, $columns, $indexes, $comment);
 }
 
 function label(bool $nullable = false): ColumnDefinition
@@ -47,6 +47,28 @@ test('a differing collation is reported', function (): void {
 
     expect($differences)->toBe([
         'Table [widgets] declares collate [utf8mb4_0900_ai_ci], expected [utf8mb4_unicode_ci].',
+    ]);
+});
+
+test('a differing table comment is reported', function (): void {
+    $differences = new SchemaDiff(
+        ['widgets' => widgets(comment: 'The widgets table')],
+        ['widgets' => widgets()],
+    )->differences();
+
+    expect($differences)->toBe([
+        'Table [widgets] declares comment null, expected "The widgets table".',
+    ]);
+});
+
+test('a table comment declared in php but absent from the database is reported', function (): void {
+    $differences = new SchemaDiff(
+        ['widgets' => widgets()],
+        ['widgets' => widgets(comment: 'The widgets table')],
+    )->differences();
+
+    expect($differences)->toBe([
+        'Table [widgets] declares comment "The widgets table", expected null.',
     ]);
 });
 
@@ -115,12 +137,21 @@ test('a column definition drops the attributes that carry no information', funct
     ]);
 });
 
+// The generator omits the key rather than writing an empty string, but an
+// enum edited by hand may carry one; it reads as no comment either way.
+test('a table definition reads a declared comment and discards an empty one', function (): void {
+    expect(TableDefinition::fromAttributes([Table::comment => 'The widgets table'], [])->comment)
+        ->toBe('The widgets table')
+        ->and(TableDefinition::fromAttributes([Table::comment => ''], [])->comment)->toBeNull();
+});
+
 test('a definition built from attributes falls back to empty values', function (): void {
     $TableDefinition = TableDefinition::fromAttributes([Table::indexes => 'not an array'], [
         'label' => ColumnDefinition::fromAttributes([Column::name => 'not an enum case']),
     ]);
 
     expect($TableDefinition->name)->toBeEmpty()
+        ->and($TableDefinition->comment)->toBeNull()
         ->and($TableDefinition->collate)->toBeEmpty()
         ->and($TableDefinition->indexes)->toBeEmpty()
         ->and($TableDefinition->columns['label']->name)->toBeEmpty()

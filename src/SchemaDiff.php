@@ -44,6 +44,10 @@ final readonly class SchemaDiff
         $Source = $this->source[$table];
         $differences = [];
 
+        if ($Database->comment !== $Source->comment) {
+            $differences[] = "Table [{$table}] declares comment ".$this->encode($Source->comment).', expected '.$this->encode($Database->comment).'.';
+        }
+
         if ($Database->collate !== $Source->collate) {
             $differences[] = "Table [{$table}] declares collate [{$Source->collate}], expected [{$Database->collate}].";
         }

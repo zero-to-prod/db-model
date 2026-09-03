@@ -35,6 +35,7 @@ final readonly class TableRenderer
             '    schema: '.class_basename($this->SourceSchema->schema).'::class,',
             '    attributes: [',
             '        Table::name => '.var_export($TableDefinition->name, true).',',
+            ...$this->comment($TableDefinition),
             '        Table::collate => '.var_export($TableDefinition->collate, true).',',
             ...$this->indexes($TableDefinition),
             '    ])]',
@@ -72,6 +73,19 @@ final readonly class TableRenderer
         sort($imports);
 
         return array_map(static fn (string $import): string => 'use '.$import.';', $imports);
+    }
+
+    /**
+     * The table's own comment, omitted entirely when it carries none so that a
+     * table without one renders exactly as it always has.
+     *
+     * @return list<string>
+     */
+    private function comment(TableDefinition $TableDefinition): array
+    {
+        return $TableDefinition->comment === null
+            ? []
+            : ['        Table::comment => '.var_export($TableDefinition->comment, true).','];
     }
 
     /** @return list<string> */

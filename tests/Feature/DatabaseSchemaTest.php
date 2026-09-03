@@ -57,6 +57,15 @@ test('the database schema keeps only the indexes a column cannot carry', functio
         ->and($Gadgets->columns['code']->unique)->toBeTrue();
 });
 
+// MySQL reports no table comment as an empty string; a table without one must
+// read as none at all so that nothing is rendered for it.
+test('the database schema reads the table comment and reports an absent one as null', function (): void {
+    $tables = DatabaseSchema::read();
+
+    expect($tables['gadgets']->comment)->toBe('The gadgets a customer orders')
+        ->and($tables['widgets']->comment)->toBeNull();
+});
+
 test('the database schema is read in table name order', function (): void {
     expect(array_keys(DatabaseSchema::read()))->toBe(['gadgets', 'widgets']);
 });

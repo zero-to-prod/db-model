@@ -21,7 +21,13 @@ final class DatabaseSchema
         $tables = [];
 
         foreach ($Builder->getTables($database ?? $Builder->getConnection()->getDatabaseName()) as $table) {
-            $tables[$table['name']] = self::table($Builder, $table['schema_qualified_name'], $table['name'], $table['collation'] ?? '');
+            $tables[$table['name']] = self::table(
+                $Builder,
+                $table['schema_qualified_name'],
+                $table['name'],
+                $table['collation'] ?? '',
+                $table['comment'] ?? '',
+            );
         }
 
         ksort($tables);
@@ -29,7 +35,8 @@ final class DatabaseSchema
         return $tables;
     }
 
-    private static function table(Builder $Builder, string $reference, string $name, string $collate): TableDefinition
+    /** A driver reporting no table comment — SQLite and SQL Server never do — reads as none at all. */
+    private static function table(Builder $Builder, string $reference, string $name, string $collate, string $comment): TableDefinition
     {
         $primary = [];
         $unique = [];
@@ -62,7 +69,7 @@ final class DatabaseSchema
             );
         }
 
-        return new TableDefinition($name, $collate, $columns, $indexes);
+        return new TableDefinition($name, $collate, $columns, $indexes, $comment === '' ? null : $comment);
     }
 
     private static function length(string $type_name, string $type): ?int

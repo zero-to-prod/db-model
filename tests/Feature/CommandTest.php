@@ -28,6 +28,17 @@ test('db-model:check fails and names the drift', function (): void {
         ->toContain('1 difference(s) found');
 });
 
+test('db-model:check fails when the table comment drifts', function (): void {
+    Schema::table('gadgets', static function (Blueprint $table): void {
+        $table->comment('Something else entirely');
+    });
+
+    expect(Artisan::call('db-model:check', ['--schema' => 'Testing']))->toBe(Command::FAILURE)
+        ->and(Artisan::output())
+        ->toContain('Table [gadgets] declares comment "The gadgets a customer orders", expected "Something else entirely".')
+        ->toContain('1 difference(s) found');
+});
+
 test('db-model:generate creates, leaves and rewrites the table enums', function (): void {
     $path = storage_path('framework/testing/db-model');
 

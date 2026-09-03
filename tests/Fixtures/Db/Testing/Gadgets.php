@@ -22,6 +22,7 @@ use ZeroToProd\DbModel\Table;
     schema: Testing::class,
     attributes: [
         Table::name => 'gadgets',
+        Table::comment => 'The gadgets a customer orders',
         Table::collate => 'utf8mb4_0900_ai_ci',
         Table::indexes => [
             'gadgets_family_variant_index' => [

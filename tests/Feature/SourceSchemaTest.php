@@ -26,6 +26,37 @@ test('the schema enum declares its name and collation', function (): void {
     ]);
 });
 
+test('the renderer writes the table comment between the name and the collation', function (): void {
+    $rendered = new TableRenderer(SourceSchema::make('Testing'))->render(
+        new TableDefinition('sprockets', 'utf8mb4_unicode_ci', comment: "the sprockets a customer's order carries"),
+    );
+
+    expect($rendered)->toContain(implode("\n", [
+        "        Table::name => 'sprockets',",
+        "        Table::comment => 'the sprockets a customer\\'s order carries',",
+        "        Table::collate => 'utf8mb4_unicode_ci',",
+    ]));
+});
+
+// The key is written only when the database reports one, so a table without a
+// comment renders exactly the bytes it did before the key existed.
+test('the renderer omits the table comment key when there is none', function (): void {
+    $TableRenderer = new TableRenderer(SourceSchema::make('Testing'));
+    $TableDefinition = new TableDefinition('sprockets', 'utf8mb4_unicode_ci');
+
+    $rendered = $TableRenderer->render($TableDefinition);
+
+    expect($rendered)->not->toContain('Table::comment')
+        ->and($rendered)->toContain(implode("\n", [
+            "        Table::name => 'sprockets',",
+            "        Table::collate => 'utf8mb4_unicode_ci',",
+        ]))
+        // The comment is the one line that separates the two renders.
+        ->and(preg_replace("/^ *Table::comment => .*\n/m", '', $TableRenderer->render(
+            new TableDefinition('sprockets', 'utf8mb4_unicode_ci', comment: 'a comment'),
+        )))->toBe($rendered);
+});
+
 test('a table enum declares its schema, name and collation', function (): void {
     $Table = new ReflectionClass(Widgets::class)->getAttributes(Table::class)[0]->newInstance();
 
@@ -75,6 +106,8 @@ test('the source schema reads every declared table and skips the schema enum', f
         ->and($tables['gadgets']->indexes)->toBe([
             'gadgets_family_variant_index' => ['family', 'variant'],
         ])
+        ->and($tables['gadgets']->comment)->toBe('The gadgets a customer orders')
+        ->and($tables['widgets']->comment)->toBeNull()
         ->and($tables['gadgets']->columns['code']->unique)->toBeTrue()
         ->and($tables['widgets']->collate)->toBe('utf8mb4_unicode_ci');
 });
